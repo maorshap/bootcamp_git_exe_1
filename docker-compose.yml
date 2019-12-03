@@ -1,0 +1,49 @@
+version: '3'
+services:
+  elastic_service:
+    build:
+      context: .
+      dockerfile: ElasticDockerfile
+    container_name: elastic_search_container
+    environment:
+      - cluster.name=elastic-cluster
+      - node.name=first_node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+  my_server_1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - elastic_service
+    container_name: ms1_container
+    ports:
+      - "8080:8080"
+  my_server_2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - elastic_service
+    container_name: ms2_container
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy_container
+    ports:
+      - "8001:8080"
+    depends_on:
+      - my_server_1
+      - my_server_2
+    volumes:
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+volumes:
+  esdata1:
+    driver: local

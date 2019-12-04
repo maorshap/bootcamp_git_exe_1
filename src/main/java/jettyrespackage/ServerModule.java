@@ -17,16 +17,15 @@ import org.elasticsearch.client.RestHighLevelClient;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
-
-
-
 public class ServerModule extends AbstractModule {
     JerseyConfiguration jerseyConfiguration;
+    ServerConfiguration serverConfiguration;
 
     public ServerModule(String package_path){
+        this.serverConfiguration = getServerConfiguration();
         jerseyConfiguration = JerseyConfiguration.builder()
                 .addPackage(package_path)
-                .addPort(getServerConfiguration().getPort())
+                .addPort(serverConfiguration.getPort())
                 .build();
     }
 
@@ -42,9 +41,8 @@ public class ServerModule extends AbstractModule {
     @Provides
     public ServerConfiguration getServerConfiguration(){
         Gson gson = new Gson();
-        JsonReader jsonReader = null;
         try{
-            jsonReader = new JsonReader(new FileReader("server.config"));
+            JsonReader jsonReader = new JsonReader(new FileReader("server.config"));
             if(jsonReader == null)
                 throw new Exception("JsonReader instance failed in the installation process");
             return gson.fromJson(jsonReader, ServerConfiguration.class);
@@ -53,7 +51,6 @@ public class ServerModule extends AbstractModule {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-
         return null;
     }
 
@@ -61,8 +58,8 @@ public class ServerModule extends AbstractModule {
     public RestHighLevelClient getElasticClient(){
       return new RestHighLevelClient(
         RestClient.builder(
-                new HttpHost("elastic_search_container", 9200, "http"),
-                new HttpHost("elastic_search_container", 9201, "http")));
+                new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9200, "http"),
+                new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9201, "http")));
     }
 
 }

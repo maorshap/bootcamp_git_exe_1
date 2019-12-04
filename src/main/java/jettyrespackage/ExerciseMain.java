@@ -21,7 +21,7 @@ public class ExerciseMain {
         }
     }
 
-   /* private static void createJettyServer() {
+    /* private static void createJettyServer() {
         //Injector which calls getInstance of ServletContextHandler
         ResourceConfig config = new ResourceConfig();
         config.packages("jettyrespackage");

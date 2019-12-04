@@ -25,6 +25,7 @@ dependencies {
     compile 'io.logz.log4j2:logzio-log4j2-appender:1.0.5'
     compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.9.0'
 
+    //Asked by JUnit Tests for Json conversion to be made by Jackson (JAXB)
     compile group: 'javax.activation', name: 'activation', version: '1.1'
     compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.1'
 

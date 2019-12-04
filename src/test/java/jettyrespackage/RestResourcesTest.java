@@ -22,16 +22,17 @@ public class RestResourcesTest {
     @Test
     public void testSearchDocument() {
         String message = "boot";
-        String header = "Macintosh";
+        String userAgent = "Macintosh";
 
         Response response = getWebTarget().path("search")
                 .queryParam("message", message)
-                .queryParam("header", header)
+                .queryParam("User-Agent", userAgent)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
 
-        System.out.println(response.readEntity(String.class));
         assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
+
+        System.out.println(response.readEntity(String.class));
     }
 
     @Test
@@ -44,9 +45,10 @@ public class RestResourcesTest {
                 .header(HttpHeaders.USER_AGENT, agentHeaderString)
                 .post(Entity.json(jsonString));
 
+        assertNotNull(response);
+        assertTrue(response.getStatus() >= 200 && response.getStatus() < 300);
 
         System.out.println(response.getStatus());
-        assertNotNull(response);
 
     }
 

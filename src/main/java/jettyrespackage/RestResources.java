@@ -9,6 +9,8 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -22,17 +24,21 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
 
 @Path("bootcamp")
 public class RestResources {
     private static int visit_counter = 1;
     private final static String INVERSE_INDEX_NAME = "messages";
+    private final static String DOCUMENT_TYPE = "type_1";
 
     //Injected Objects
     private ServerConfiguration serverConfiguration;
@@ -42,6 +48,35 @@ public class RestResources {
     public RestResources(ServerConfiguration serverConfiguration, RestHighLevelClient client) {
         this.serverConfiguration = serverConfiguration;
         this.client = client;
+    }
+
+    //Method should be overloading when there are more than 1 Index request implementation.
+    //Can be better implementation by making it to generic by use of Reflection api.
+    private IndexRequest getIndexRequest(DocumentMessage documentMessage, String userAgent) {
+        Map<String, String> map = new HashMap<>();
+        map.put("message", documentMessage.getMessage());
+        map.put("User-Agent", userAgent);
+
+        return new IndexRequest(INVERSE_INDEX_NAME, DOCUMENT_TYPE).source(map);
+    }
+
+    //Generic generated search query exactly by the provided query parameters.
+    private SearchRequest getSearchQuery(UriInfo uriInfo) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+        for (Map.Entry<String, List<String>> param : queryParams.entrySet()) {
+            QueryBuilder curQuery = QueryBuilders.matchQuery(param.getKey(), param.getValue().iterator().next());
+            boolQueryBuilder.must(curQuery);
+        }
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(boolQueryBuilder);
+
+        SearchRequest searchRequest = new SearchRequest(INVERSE_INDEX_NAME);
+        searchRequest.source(searchSourceBuilder);
+
+        return searchRequest;
     }
 
     @GET
@@ -61,14 +96,42 @@ public class RestResources {
     @GET
     @Path("search")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchDocument(@QueryParam("message") String message, @QueryParam("header") String header) {
+    public Response searchDocument2(@Context UriInfo uriInfo) {
 
-        SearchRequest searchRequest = new SearchRequest(INVERSE_INDEX_NAME);
+        SearchRequest searchRequest = getSearchQuery(uriInfo);
+        SearchResponse searchResponse;
+        StringBuilder sb = new StringBuilder();
+
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit : hits) {
+                sb.append(hit.toString()).append("\n");
+            }
+        } catch (IOException e) {
+            sb.append("Failed in search:(");
+            e.printStackTrace();
+        } finally {
+            return Response
+                    .status(Response.Status.OK)
+                    .entity(sb.toString())
+                    .build();
+        }
+    }
+
+    //Used for original asked requested url query parameter (header)
+    @GET
+    @Path("search/v2")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchDocument(@QueryParam("message") String message, @QueryParam("header") String header) {
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
                 .must(QueryBuilders.matchQuery("message", message))
                 .must(QueryBuilders.matchQuery("User-Agent", header)));
+
+
+        SearchRequest searchRequest = new SearchRequest(INVERSE_INDEX_NAME);
         searchRequest.source(searchSourceBuilder);
 
         SearchResponse searchResponse;
@@ -104,11 +167,7 @@ public class RestResources {
                     .build();
         }
 
-        Map<String, String> map = new HashMap<>();
-        map.put("message", documentMessage.getMessage());
-        map.put("User-Agent", userAgent);
-
-        IndexRequest indexRequest = new IndexRequest(INVERSE_INDEX_NAME, "type1", "1").source(map);
+        IndexRequest indexRequest = getIndexRequest(documentMessage, userAgent);
         StringBuilder response_message = new StringBuilder();
 
         try {
@@ -136,7 +195,6 @@ public class RestResources {
             }
         }
     }
-
 
 }
 

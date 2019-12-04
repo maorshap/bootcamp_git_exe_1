@@ -3,6 +3,15 @@ package jettyrespackage;
 public class ServerConfiguration {
     private String logMessage;
     private int port;
+    private String elasticSearchContainerName;
+
+    public String getElasticSearchContainerName() {
+        return elasticSearchContainerName;
+    }
+
+    public void setElasticSearchContainerName(String elasticSearchContainerName) {
+        this.elasticSearchContainerName = elasticSearchContainerName;
+    }
 
     public ServerConfiguration(){}
 

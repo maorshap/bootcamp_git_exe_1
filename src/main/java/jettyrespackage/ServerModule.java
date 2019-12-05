@@ -1,5 +1,6 @@
 package jettyrespackage;
 
+import Dao.ServerConfiguration;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 
@@ -21,45 +22,27 @@ public class ServerModule extends AbstractModule {
     JerseyConfiguration jerseyConfiguration;
     ServerConfiguration serverConfiguration;
 
-    public ServerModule(String package_path){
-        this.serverConfiguration = getServerConfiguration();
+    public ServerModule(String packagePath, ServerConfiguration serverConfiguration) {
+        this.serverConfiguration = serverConfiguration;
+
         jerseyConfiguration = JerseyConfiguration.builder()
-                .addPackage(package_path)
+                .addPackage(packagePath)
                 .addPort(serverConfiguration.getPort())
                 .build();
     }
 
     @Override
-    protected void configure(){
+    protected void configure() {
         install(new JerseyModule(jerseyConfiguration));
     }
 
-    /**
-     * Creates Configuration object from configuration file
-     * @return ServerConfiguration instance
-     */
-    @Provides
-    public ServerConfiguration getServerConfiguration(){
-        Gson gson = new Gson();
-        try{
-            JsonReader jsonReader = new JsonReader(new FileReader("server.config"));
-            if(jsonReader == null)
-                throw new Exception("JsonReader instance failed in the installation process");
-            return gson.fromJson(jsonReader, ServerConfiguration.class);
-        }catch(FileNotFoundException e){
-            e.printStackTrace();
-        }catch(Exception e){
-            System.out.println(e.getMessage());
-        }
-        return null;
-    }
 
     @Provides
-    public RestHighLevelClient getElasticClient(){
-      return new RestHighLevelClient(
-        RestClient.builder(
-                new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9200, "http"),
-                new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9201, "http")));
+    public RestHighLevelClient getElasticClient() {
+        return new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9200, "http"),
+                        new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9201, "http")));
     }
 
 }

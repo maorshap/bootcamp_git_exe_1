@@ -1,8 +1,8 @@
 package jettyrespackage;
 
+import Dao.ServerConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -30,38 +30,164 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import Dao.DocumentMessage;
+import Dao.ShipResponse;
+
 @Path("bootcamp")
 public class RestResources {
     private static int visit_counter = 1;
-    private final static String INVERSE_INDEX_NAME = "messages";
-    private final static String DOCUMENT_TYPE = "type_1";
+    private final static String INDEX_NAME = "messages";
+    private final static String DOCUMENT_TYPE = "type1";
 
     //Injected Objects
-    private ServerConfiguration serverConfiguration;
-    private RestHighLevelClient client;
+    private final ServerConfiguration serverConfiguration;
+    private final RestHighLevelClient elasticsearchClient;
+
 
     @Inject
-    public RestResources(ServerConfiguration serverConfiguration, RestHighLevelClient client) {
+    public RestResources(ServerConfiguration serverConfiguration, RestHighLevelClient elasticsearchClient) {
         this.serverConfiguration = serverConfiguration;
-        this.client = client;
+        this.elasticsearchClient = elasticsearchClient;
     }
 
-    //Method should be overloading when there are more than 1 Index request implementation.
-    //Can be better implementation by making it to generic by use of Reflection api.
-    private IndexRequest getIndexRequest(DocumentMessage documentMessage, String userAgent) {
-        Map<String, String> map = new HashMap<>();
-        map.put("message", documentMessage.getMessage());
-        map.put("User-Agent", userAgent);
 
-        return new IndexRequest(INVERSE_INDEX_NAME, DOCUMENT_TYPE).source(map);
+    /**
+     * "/ship" entry point.
+     *
+     * @return
+     */
+    @GET
+    @Path("ship")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response shipLog() {
+        ShipResponse response = new ShipResponse();
+        response.setMessage(serverConfiguration.getLogMessage());
+        response.setCounter(visit_counter++);
+        // String response = serverConfiguration.getLogMessage() + visit_counter++;
+
+        Logger logger = LogManager.getLogger(ExerciseMain.class);
+        logger.info(response);
+
+        return Response
+                .status(Response.Status.OK)
+                .entity(response)
+                .build();
     }
 
-    //Generic generated search query exactly by the provided query parameters.
-    private SearchRequest getSearchQuery(UriInfo uriInfo) {
+
+    /**
+     * "/search" entry point.
+     *
+     * @param uriInfo
+     * @return
+     */
+    @GET
+    @Path("search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchDocument2(@Context UriInfo uriInfo) {
+        SearchRequest searchRequest = buildSearchRequest(uriInfo);
+        return buildResponse(searchRequest);
+    }
+
+
+    /**
+     * "/search/v2" entry point.
+     * Used for original assignment which requested url header query parameter.
+     *
+     * @param message
+     * @param header
+     * @return
+     */
+    @GET
+    @Path("search/v2")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchDocument(@QueryParam("message") String message, @QueryParam("header") String header) {
+        SearchRequest searchRequest = new SearchRequest(INDEX_NAME);
+        SearchSourceBuilder searchSourceBuilder = buildSearchQuery(message, header);
+        searchRequest.source(searchSourceBuilder);
+        return buildResponse(searchRequest);
+    }
+
+    private SearchSourceBuilder buildSearchQuery(String message, String header) {
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.boolQuery()
+                .must(QueryBuilders.matchQuery("message", message))
+                .must(QueryBuilders.matchQuery("User-Agent", header)));
+        return searchSourceBuilder;
+    }
+
+
+    /**
+     * "/index" entry point.
+     *
+     * @param documentMessage
+     * @param userAgent
+     * @return
+     */
+    @POST
+    @Path("index")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response indexDocument(DocumentMessage documentMessage, @HeaderParam("User-Agent") String userAgent) {
+
+        Map<String, Object> sourceToIndex = buildSourceMap(documentMessage, userAgent);
+
+        if (sourceToIndex == null) {
+            return Response.status(HttpURLConnection.HTTP_BAD_REQUEST)
+                    .entity("The message body is empty.")
+                    .build();
+        }
+
+        IndexRequest indexRequest = new IndexRequest(INDEX_NAME, DOCUMENT_TYPE);
+        indexRequest.source(sourceToIndex);
+
+        return buildResponse(indexRequest);
+    }
+
+
+    /**
+     * @param strings
+     * @return
+     */
+    private boolean checkStringsValidation(String... strings) {
+        for (String str : strings) {
+            if (str == null || str.trim().length() == 0)
+                return false;
+        }
+        return true;
+    }
+
+
+    /**
+     * @param documentMessage
+     * @param userAgent
+     * @return
+     */
+    private Map<String, Object> buildSourceMap(DocumentMessage documentMessage, String userAgent) {
+        String message = documentMessage.getMessage();
+        if (!checkStringsValidation(message, userAgent)) {
+            return null;
+        }
+
+        Map<String, Object> jsonAsMap = new HashMap<>();
+        System.out.println(documentMessage.getMessage() + ", " + userAgent);
+        jsonAsMap.put("message", message);
+        jsonAsMap.put("User-Agent", userAgent);
+
+        return jsonAsMap;
+    }
+
+
+    /**
+     * @param uriInfo
+     * @return
+     */
+    private SearchRequest buildSearchRequest(UriInfo uriInfo) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
@@ -73,128 +199,56 @@ public class RestResources {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(boolQueryBuilder);
 
-        SearchRequest searchRequest = new SearchRequest(INVERSE_INDEX_NAME);
+        SearchRequest searchRequest = new SearchRequest(INDEX_NAME);
         searchRequest.source(searchSourceBuilder);
 
         return searchRequest;
     }
 
-    @GET
-    @Path("ship")
-    @Produces(MediaType.TEXT_PLAIN)
-    public Response shipLog() {
-        String response = serverConfiguration.getLogMessage() + visit_counter++;
-        Logger logger = LogManager.getLogger(ExerciseMain.class);
-        logger.info(response);
 
-        return Response
-                .status(Response.Status.OK)
-                .entity(response)
-                .build();
-    }
+    /**
+     * @param requestObject
+     * @param <E>
+     * @return
+     */
+    private <E> Response buildResponse(E requestObject) {
 
-    @GET
-    @Path("search")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchDocument2(@Context UriInfo uriInfo) {
-
-        SearchRequest searchRequest = getSearchQuery(uriInfo);
-        SearchResponse searchResponse;
+        int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
         StringBuilder sb = new StringBuilder();
 
         try {
-            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                sb.append(hit.toString()).append("\n");
+            if (requestObject instanceof IndexRequest) {
+                IndexResponse indexResponse = elasticsearchClient.index((IndexRequest) requestObject, RequestOptions.DEFAULT);
+                responseStatus = HttpURLConnection.HTTP_OK;
+                sb.append("Document has been indexed successfully.");
             }
-        } catch (IOException e) {
-            sb.append("Failed in search:(");
+            else if (requestObject instanceof SearchRequest) {
+                SearchResponse searchResponse = elasticsearchClient.search((SearchRequest) requestObject, RequestOptions.DEFAULT);
+                responseStatus = HttpURLConnection.HTTP_OK;
+
+                SearchHits searchHits = searchResponse.getHits();
+                for (SearchHit hit : searchHits)
+                    sb.append(hit).append("\n");
+            }
+            else {
+                responseStatus = HttpURLConnection.HTTP_NOT_ACCEPTABLE;
+                sb.append("Unrecognized request object.");
+            }
+        }
+        catch (IOException e) {
+            sb.append("Internal error has occurred.");
             e.printStackTrace();
-        } finally {
-            return Response
-                    .status(Response.Status.OK)
+        }
+        finally {
+            return Response.status(responseStatus)
                     .entity(sb.toString())
                     .build();
         }
+
+
+
     }
 
-    //Used for original asked requested url query parameter (header)
-    @GET
-    @Path("search/v2")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchDocument(@QueryParam("message") String message, @QueryParam("header") String header) {
-
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.boolQuery()
-                .must(QueryBuilders.matchQuery("message", message))
-                .must(QueryBuilders.matchQuery("User-Agent", header)));
-
-
-        SearchRequest searchRequest = new SearchRequest(INVERSE_INDEX_NAME);
-        searchRequest.source(searchSourceBuilder);
-
-        SearchResponse searchResponse;
-        StringBuilder sb = new StringBuilder();
-
-        try {
-            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-            SearchHits hits = searchResponse.getHits();
-            for (SearchHit hit : hits) {
-                sb.append(hit.toString()).append("\n");
-            }
-        } catch (IOException e) {
-            sb.append("Failed in search:(");
-            e.printStackTrace();
-        } finally {
-            return Response
-                    .status(Response.Status.OK)
-                    .entity(sb.toString())
-                    .build();
-        }
-    }
-
-    @POST
-    @Path("index")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response indexDocument(DocumentMessage documentMessage, @HeaderParam("User-Agent") String userAgent) {
-
-        //checking Edge case
-        if (documentMessage.getMessage().trim().length() == 0) {
-            return Response.status(Response.Status.OK)
-                    .entity("The Message is empty - please insert message to be index.")
-                    .build();
-        }
-
-        IndexRequest indexRequest = getIndexRequest(documentMessage, userAgent);
-        StringBuilder response_message = new StringBuilder();
-
-        try {
-            IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
-            if (indexResponse.getResult() == DocWriteResponse.Result.CREATED) {
-                response_message.append("Document has been created successfully.");
-            } else if (indexResponse.getResult() == DocWriteResponse.Result.UPDATED) {
-                response_message.append("Document has been updated successfully.");
-            } else {
-                response_message.append("Error at indexing the Document.");
-            }
-        } catch (IOException e) {
-            response_message.append("Error at indexing the Document.");
-            e.printStackTrace();
-        } finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                return Response
-                        .status(Response.Status.OK)
-                        .entity(response_message.toString())
-                        .build();
-            }
-        }
-    }
 
 }
 

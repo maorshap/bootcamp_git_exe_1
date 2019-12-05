@@ -1,5 +1,6 @@
 version: '3'
 services:
+
   elastic_service:
     build:
       context: .
@@ -18,6 +19,7 @@ services:
       - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
+
   my_server_1:
     build:
       context: .
@@ -27,6 +29,7 @@ services:
     container_name: ms1_container
     ports:
       - "8080:8080"
+
   my_server_2:
     build:
       context: .
@@ -34,6 +37,7 @@ services:
     depends_on:
       - elastic_service
     container_name: ms2_container
+
   haproxy:
     image: haproxy:latest
     container_name: haproxy_container
@@ -44,6 +48,7 @@ services:
       - my_server_2
     volumes:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+
 volumes:
   esdata1:
     driver: local

@@ -16,7 +16,8 @@ public class ExerciseMain {
         JerseyServer jerseyServer = injector.getInstance(JerseyServer.class);
         try {
             jerseyServer.start();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }

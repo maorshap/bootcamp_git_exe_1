@@ -38,6 +38,8 @@ import java.util.Map;
 import Dao.DocumentMessage;
 import Dao.ShipResponse;
 
+import static java.util.Objects.requireNonNull;
+
 @Path("bootcamp")
 public class RestResources {
     private static int visit_counter = 1;
@@ -51,8 +53,8 @@ public class RestResources {
 
     @Inject
     public RestResources(ServerConfiguration serverConfiguration, RestHighLevelClient elasticsearchClient) {
-        this.serverConfiguration = serverConfiguration;
-        this.elasticsearchClient = elasticsearchClient;
+        this.serverConfiguration = requireNonNull(serverConfiguration);
+        this.elasticsearchClient = requireNonNull(elasticsearchClient);
     }
 
 
@@ -150,10 +152,6 @@ public class RestResources {
     }
 
 
-    /**
-     * @param strings
-     * @return
-     */
     private boolean checkStringsValidation(String... strings) {
         for (String str : strings) {
             if (str == null || str.trim().length() == 0)
@@ -163,11 +161,6 @@ public class RestResources {
     }
 
 
-    /**
-     * @param documentMessage
-     * @param userAgent
-     * @return
-     */
     private Map<String, Object> buildSourceMap(DocumentMessage documentMessage, String userAgent) {
         String message = documentMessage.getMessage();
         if (!checkStringsValidation(message, userAgent)) {
@@ -183,10 +176,6 @@ public class RestResources {
     }
 
 
-    /**
-     * @param uriInfo
-     * @return
-     */
     private SearchRequest buildSearchRequest(UriInfo uriInfo) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
@@ -206,36 +195,19 @@ public class RestResources {
     }
 
 
-    /**
-     * @param requestObject
-     * @param <E>
-     * @return
-     */
-    private <E> Response buildResponse(E requestObject) {
-
-        int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
+    private Response buildResponse(SearchRequest request){
         StringBuilder sb = new StringBuilder();
+        int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
 
-        try {
-            if (requestObject instanceof IndexRequest) {
-                IndexResponse indexResponse = elasticsearchClient.index((IndexRequest) requestObject, RequestOptions.DEFAULT);
-                responseStatus = HttpURLConnection.HTTP_OK;
-                sb.append("Document has been indexed successfully.");
-            }
-            else if (requestObject instanceof SearchRequest) {
-                SearchResponse searchResponse = elasticsearchClient.search((SearchRequest) requestObject, RequestOptions.DEFAULT);
-                responseStatus = HttpURLConnection.HTTP_OK;
+        try{
+            SearchResponse searchResponse = elasticsearchClient.search((SearchRequest)request, RequestOptions.DEFAULT);
+            responseStatus = HttpURLConnection.HTTP_OK;
 
-                SearchHits searchHits = searchResponse.getHits();
-                for (SearchHit hit : searchHits)
-                    sb.append(hit).append("\n");
-            }
-            else {
-                responseStatus = HttpURLConnection.HTTP_NOT_ACCEPTABLE;
-                sb.append("Unrecognized request object.");
-            }
+            SearchHits searchHits = searchResponse.getHits();
+            for (SearchHit hit : searchHits)
+                sb.append(hit).append("\n");
         }
-        catch (IOException e) {
+        catch(IOException e){
             sb.append("Internal error has occurred.");
             e.printStackTrace();
         }
@@ -245,10 +217,28 @@ public class RestResources {
                     .build();
         }
 
-
-
     }
 
+    private Response buildResponse(IndexRequest request){
+        StringBuilder sb = new StringBuilder();
+        int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
+
+        try{
+            IndexResponse indexResponse = elasticsearchClient.index((IndexRequest) request, RequestOptions.DEFAULT);
+            responseStatus = HttpURLConnection.HTTP_OK;
+            sb.append("Document has been indexed successfully.");
+        }
+        catch(IOException e){
+            sb.append("Internal error has occurred.");
+            e.printStackTrace();
+        }
+        finally {
+            return Response.status(responseStatus)
+                    .entity(sb.toString())
+                    .build();
+        }
+
+    }
 
 }
 

@@ -19,8 +19,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 public class ServerModule extends AbstractModule {
-    JerseyConfiguration jerseyConfiguration;
-    ServerConfiguration serverConfiguration;
+    private final JerseyConfiguration jerseyConfiguration;
+    private final ServerConfiguration serverConfiguration;
 
     public ServerModule(String packagePath, ServerConfiguration serverConfiguration) {
         this.serverConfiguration = serverConfiguration;
@@ -43,6 +43,11 @@ public class ServerModule extends AbstractModule {
                 RestClient.builder(
                         new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9200, "http"),
                         new HttpHost(serverConfiguration.getElasticSearchContainerName(), 9201, "http")));
+    }
+
+    @Provides
+    public ServerConfiguration getServerConfiguration(){
+        return this.serverConfiguration;
     }
 
 }

@@ -89,6 +89,7 @@ public class RestResourcesTest {
                 .request(MediaType.APPLICATION_JSON)
                 .get();
 
+        assertNotNull(indexResponse);
         assertTrue(searchResponse.getStatus() >= 200 && searchResponse.getStatus() < 300);
 
         System.out.println("The retrived message from elasticsearch:\n" + searchResponse.readEntity(String.class));

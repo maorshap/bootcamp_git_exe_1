@@ -14,18 +14,8 @@ public class ServerConfiguration {
     }
 
 
-    public void setElasticSearchContainerName(String elasticSearchContainerName) {
-        this.elasticSearchContainerName = elasticSearchContainerName;
-    }
-
-
     public int getPort() {
         return port;
-    }
-
-
-    public void setPort(int port) {
-        this.port = port;
     }
 
 
@@ -33,8 +23,4 @@ public class ServerConfiguration {
         return logMessage;
     }
 
-
-    public void setLogMessage(String logMessage) {
-        this.logMessage = logMessage;
-    }
 }

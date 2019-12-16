@@ -4,7 +4,7 @@ services:
   elastic_service:
     build:
       context: .
-      dockerfile: ElasticDockerfile
+      dockerfile: producer/ElasticDockerfile
     container_name: elastic_search_container
     environment:
       - cluster.name=elastic-cluster
@@ -20,34 +20,60 @@ services:
     ports:
       - 9200:9200
 
-  my_server_1:
+  jersey_server_1:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: producer/Dockerfile
     depends_on:
       - elastic_service
-    container_name: ms1_container
-    ports:
-      - "8080:8080"
+      - zookeeper
+      - kafka
+    container_name: js1_container
 
-  my_server_2:
+  jersey_server_2:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: producer/Dockerfile
     depends_on:
       - elastic_service
-    container_name: ms2_container
+      - zookeeper
+      - kafka
+    container_name: js2_container
 
   haproxy:
-    image: haproxy:latest
+    build:
+      context: .
+      dockerfile: haproxy/Dockerfile
     container_name: haproxy_container
     ports:
       - "8001:8080"
     depends_on:
-      - my_server_1
-      - my_server_2
+      - jersey_server_1
+      - jersey_server_2
+
+  zookeeper:
+    image: wurstmeister/zookeeper:3.4.6
+    ports:
+      - "2181:2181"
+    #container_name: zookeeper_container
+    #hostname: zookeeper
+
+  kafka:
+    image: wurstmeister/kafka:2.11-2.0.0
+    ports:
+      - "9092:9092"
+   # container_name: kafka_container
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: kafka
     volumes:
-      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  consumer:
+    build:
+      context: .
+      dockerfile: indexer/Dockerfile
+    container_name: consumer_container
 
 volumes:
   esdata1:

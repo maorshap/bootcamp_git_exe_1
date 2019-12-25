@@ -171,13 +171,6 @@ public class RestResources {
     }
 
 
-//    @POST
-//    @Path("create-account")
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public Response createAccount()
-
-
     private boolean checkStringsValidation(String... strings) {
         for (String str : strings) {
             if (str == null || str.trim().length() == 0)

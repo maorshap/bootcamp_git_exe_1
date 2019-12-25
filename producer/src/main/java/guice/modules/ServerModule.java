@@ -1,11 +1,10 @@
 package guice.modules;
 
-import configuration.ConfigurationLoader;
+import configuration.util.ConfigurationLoader;
 import entites.ServerConfigEntity;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import parsers.ServerConfigParser;
 
 public class ServerModule extends AbstractModule {
 

@@ -38,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import entites.DocumentMessageEntity;
+import boundaries.DocumentMessageBoundary;
 import entites.ShipResponseEntity;
 
 import static java.util.Objects.requireNonNull;
@@ -126,7 +126,7 @@ public class RestResources {
     /**
      * "/index" entry point.
      *
-     * @param documentMessageEntity - Message content to be index
+     * @param documentMessageBoundary - Message content to be index
      * @param userAgent - Send by agent
      * @return Response invoked by Index action
      */
@@ -134,12 +134,12 @@ public class RestResources {
     @Path("index")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response indexDocument(DocumentMessageEntity documentMessageEntity, @HeaderParam("User-Agent") String userAgent) {
+    public Response indexDocument(DocumentMessageBoundary documentMessageBoundary, @HeaderParam("User-Agent") String userAgent) {
 
         int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
         StringBuilder sb = new StringBuilder();
 
-        Map<String, Object> sourceToIndex = buildSourceMap(documentMessageEntity, userAgent);
+        Map<String, Object> sourceToIndex = buildSourceMap(documentMessageBoundary, userAgent);
 
         if (sourceToIndex == null) {
             return Response.status(HttpURLConnection.HTTP_BAD_REQUEST)
@@ -171,6 +171,13 @@ public class RestResources {
     }
 
 
+//    @POST
+//    @Path("create-account")
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response createAccount()
+
+
     private boolean checkStringsValidation(String... strings) {
         for (String str : strings) {
             if (str == null || str.trim().length() == 0)
@@ -180,8 +187,8 @@ public class RestResources {
     }
 
 
-    private Map<String, Object> buildSourceMap(DocumentMessageEntity documentMessageEntity, String userAgent) {
-        String message = documentMessageEntity.getMessage();
+    private Map<String, Object> buildSourceMap(DocumentMessageBoundary documentMessageBoundary, String userAgent) {
+        String message = documentMessageBoundary.getMessage();
         if (!checkStringsValidation(message, userAgent)) {
             return null;
         }

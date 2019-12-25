@@ -2,12 +2,11 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.ConfigurationLoader;
+import configuration.util.ConfigurationLoader;
 import entites.ElasticConfigEntity;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import parsers.ElasticConfigParser;
 
 public class ElasticserachModule extends AbstractModule {
 

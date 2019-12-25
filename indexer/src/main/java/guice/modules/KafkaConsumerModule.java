@@ -2,14 +2,13 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.ConfigurationLoader;
+import configuration.util.ConfigurationLoader;
 import entities.ConsumerConfigEntity;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import parsers.ConsumerConfigParser;
 
 import java.util.Collections;
 import java.util.Properties;

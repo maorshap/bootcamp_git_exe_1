@@ -2,14 +2,12 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.ConfigurationLoader;
+import configuration.util.ConfigurationLoader;
 import entities.ElasticProducerConfigEntity;
 import entities.ElasticsearchConfigEntity;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import parsers.ElasticProducerConfigParser;
-import parsers.ElasticsearchConfigParser;
 
 public class ElasticModule extends AbstractModule {
     public final static String ELASTICSEARCH_CONFIG_FILE_NAME = "elasticsearch.config";

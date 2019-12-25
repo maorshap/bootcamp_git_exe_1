@@ -2,13 +2,12 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.ConfigurationLoader;
+import configuration.util.ConfigurationLoader;
 import entites.ProducerConfigEntity;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import parsers.ProducerConfigParser;
 
 import java.util.Properties;
 

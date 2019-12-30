@@ -20,6 +20,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -43,12 +44,12 @@ import entites.ShipResponseEntity;
 
 import static java.util.Objects.requireNonNull;
 
+@Singleton
 @Path("bootcamp")
 public class RestResources {
     public final static String TOPIC = "topic1";
 
     private final static String INDEX_NAME = "messages";
-    private final static String DOCUMENT_TYPE = "type1";
 
     private static int messageCounter = 1;
 
@@ -98,29 +99,29 @@ public class RestResources {
     @GET
     @Path("search")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchDocument2(@Context UriInfo uriInfo) {
+    public Response searchDocument(@Context UriInfo uriInfo) {
         SearchRequest searchRequest = buildSearchRequest(uriInfo);
         return buildResponse(searchRequest);
     }
 
 
-    /**
-     * "/search/v2" entry point.
-     * Used for original assignment which requested url header query parameter.
-     *
-     * @param message content
-     * @param header content
-     * @return Response invoked by Search
-     */
-    @GET
-    @Path("search/v2")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response searchDocument(@QueryParam("message") String message, @QueryParam("header") String header) {
-        SearchRequest searchRequest = new SearchRequest(INDEX_NAME);
-        SearchSourceBuilder searchSourceBuilder = buildSearchQuery(message, header);
-        searchRequest.source(searchSourceBuilder);
-        return buildResponse(searchRequest);
-    }
+//    /**
+//     * "/search/v2" entry point.
+//     * Used for original assignment which requested url header query parameter.
+//     *
+//     * @param message content
+//     * @param header content
+//     * @return Response invoked by Search
+//     */
+//    @GET
+//    @Path("search/v2")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response searchDocument2(@QueryParam("message") String message, @QueryParam("header") String header) {
+//        SearchRequest searchRequest = new SearchRequest(INDEX_NAME);
+//        SearchSourceBuilder searchSourceBuilder = buildSearchQuery(message, header);
+//        searchRequest.source(searchSourceBuilder);
+//        return buildResponse(searchRequest);
+//    }
 
 
     /**
@@ -162,7 +163,7 @@ public class RestResources {
         }
         finally{
             producer.flush();
-            producer.close();
+            //producer.close();
             return Response.status(responseStatus)
                     .entity(sb.toString())
                     .build();

@@ -78,6 +78,7 @@ public class RestResourcesTest {
 
         System.out.println("The message " + generatedString + " has been indexed successfully");
 
+        //TODO::To change to the wait util library implementation.
         Thread.sleep(1000 * 7);
         String userAgent = "Macintosh";
 

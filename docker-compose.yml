@@ -28,17 +28,17 @@ services:
       - elastic_service
       - zookeeper
       - kafka
-    container_name: js1_container
+    container_name: jersey_server_1_container
 
-  jersey_server_2:
-    build:
-      context: .
-      dockerfile: producer/Dockerfile
-    depends_on:
-      - elastic_service
-      - zookeeper
-      - kafka
-    container_name: js2_container
+#  jersey_server_2:
+#    build:
+#      context: .
+#      dockerfile: producer/Dockerfile
+#    depends_on:
+#      - elastic_service
+#      - zookeeper
+#      - kafka
+#    container_name: jersey_server_2_container
 
   haproxy:
     build:
@@ -49,7 +49,7 @@ services:
       - "8001:8080"
     depends_on:
       - jersey_server_1
-      - jersey_server_2
+     # - jersey_server_2
 
   zookeeper:
     image: wurstmeister/zookeeper:3.4.6

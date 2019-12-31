@@ -226,8 +226,7 @@ public class RestResources {
             for (SearchHit hit : searchHits)
                 sb.append(hit).append("\n");
         }
-        catch(IOException e){
-            sb.append("Internal error has occurred.");
+        catch(Exception e){
             e.printStackTrace();
         }
         finally {

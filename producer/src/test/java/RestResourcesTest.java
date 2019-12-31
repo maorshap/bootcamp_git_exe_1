@@ -82,6 +82,7 @@ public class RestResourcesTest {
         Thread.sleep(1000 * 7);
         String userAgent = "Macintosh";
 
+        System.out.println("User-Agent: " + userAgent);
         Response searchResponse = getWebTarget().path("search")
                 .queryParam("message", generatedString)
                 .queryParam("User-Agent", userAgent)
@@ -89,6 +90,7 @@ public class RestResourcesTest {
                 .get();
 
         assertNotNull(indexResponse);
+        System.out.println(searchResponse.getStatus());
         assertTrue(searchResponse.getStatus() >= 200 && searchResponse.getStatus() < 300);
 
         System.out.println("The retrived message from elasticsearch:\n" + searchResponse.readEntity(String.class));

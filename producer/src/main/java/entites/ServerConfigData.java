@@ -1,10 +1,15 @@
 package entites;
 
-public class ServerConfigEntity {
+public class ServerConfigData {
     private String logMessage;
     private int port;
+    private String kafkaTopicName;
 
-    public ServerConfigEntity(){}
+    public String getKafkaTopicName() {
+        return kafkaTopicName;
+    }
+
+    public ServerConfigData(){}
 
     public int getPort() {
         return port;

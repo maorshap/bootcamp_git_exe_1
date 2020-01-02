@@ -1,10 +1,10 @@
 package entities;
 
-public class ElasticProducerConfigEntity {
+public class EsIndexerConfigData {
     private String documentType;
     private String indexName;
 
-    public ElasticProducerConfigEntity() {
+    public EsIndexerConfigData() {
     }
 
     public String getDocumentType() {

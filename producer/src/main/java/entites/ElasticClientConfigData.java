@@ -1,11 +1,11 @@
-package entities;
+package entites;
 
-public class ElasticsearchConfigEntity {
+public class ElasticClientConfigData {
     private int port;
     private String scheme;
     private String elasticSearchContainerName;
 
-    public ElasticsearchConfigEntity() {
+    public ElasticClientConfigData() {
     }
 
     public String getElasticSearchContainerName() {
@@ -19,4 +19,6 @@ public class ElasticsearchConfigEntity {
     public String getScheme() {
         return scheme;
     }
+
+
 }

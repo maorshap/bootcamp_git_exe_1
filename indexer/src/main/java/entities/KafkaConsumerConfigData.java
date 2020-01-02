@@ -1,12 +1,12 @@
 package entities;
 
-public class ConsumerConfigEntity {
+public class KafkaConsumerConfigData {
     private String host;
     private int port;
     private String groupId;
     private String topic;
 
-    public ConsumerConfigEntity() {
+    public KafkaConsumerConfigData() {
     }
 
     public String getHost() {

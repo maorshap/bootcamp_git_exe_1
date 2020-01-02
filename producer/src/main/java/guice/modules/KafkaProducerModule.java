@@ -3,7 +3,7 @@ package guice.modules;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import configuration.util.ConfigurationLoader;
-import entites.ProducerConfigEntity;
+import entites.KafkaProducerConfigData;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.IntegerSerializer;
@@ -14,10 +14,10 @@ import java.util.Properties;
 public class KafkaProducerModule extends AbstractModule {
 
     public final static String PRODUCER_CONFIG_FILE_NAME = "producer.config";
-    private final ProducerConfigEntity producerConfigEntity;
+    private final KafkaProducerConfigData producerConfigEntity;
 
     public KafkaProducerModule(){
-        this.producerConfigEntity = ConfigurationLoader.load(PRODUCER_CONFIG_FILE_NAME, ProducerConfigEntity.class);
+        this.producerConfigEntity = ConfigurationLoader.load(PRODUCER_CONFIG_FILE_NAME, KafkaProducerConfigData.class);
     }
 
     @Provides

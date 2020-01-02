@@ -1,15 +1,17 @@
 package guice.modules;
 
+import Interfaces.MessageIndexer;
 import com.google.inject.AbstractModule;
-import com.google.inject.Provides;
-import entities.IndexerEntity;
+import entities.EsIndexer;
 
-public class MainModule extends AbstractModule {
+public class IndexerModule extends AbstractModule {
 
     @Override
     protected void configure() {
         install(new KafkaConsumerModule());
         install(new ElasticModule());
+
+        bind(MessageIndexer.class).to(EsIndexer.class);
     }
 
 }

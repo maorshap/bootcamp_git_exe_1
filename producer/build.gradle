@@ -10,7 +10,7 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
 application{
-    mainClassName = 'Main'
+    mainClassName = 'ProducerMain'
 }
 
 repositories {
@@ -19,7 +19,7 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    //testCompile group: 'org.awaitility', name: 'awaitility', version: '3.0.0'
+    testCompile group: 'org.awaitility', name: 'awaitility', version: '3.0.0'
 
     compile project(':infrastructure:')
 
@@ -44,6 +44,9 @@ dependencies {
 
     //Kafka
     compile 'org.apache.kafka:kafka-clients:0.10.0.1'
+
+    //Generated Random String util
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 
 }
 

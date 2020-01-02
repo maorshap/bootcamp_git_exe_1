@@ -1,11 +1,11 @@
-package entites;
+package boundaries;
 
-public class ShipResponseEntity {
+public class ShipLogResponse {
 
     private String message;
     private int counter;
 
-    public ShipResponseEntity() {
+    public ShipLogResponse() {
     }
 
     public String getMessage() {

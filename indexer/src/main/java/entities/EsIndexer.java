@@ -1,22 +1,26 @@
 package entities;
 
+import Interfaces.MessageIndexer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
-public class IndexerEntity {
+public class EsIndexer implements MessageIndexer {
+    private static Logger LOGGER = LoggerFactory.getLogger(EsIndexer.class.getName());
     private final RestHighLevelClient elasticClient;
-    private final ElasticProducerConfigEntity elasticProducer;
+    private final EsIndexerConfigData elasticProducer;
 
     @Inject
-    public IndexerEntity(RestHighLevelClient elasticClient, ElasticProducerConfigEntity elasticProducer){
+    public EsIndexer(RestHighLevelClient elasticClient, EsIndexerConfigData elasticProducer){
         this.elasticClient = requireNonNull(elasticClient);
         this.elasticProducer = requireNonNull(elasticProducer);
     }
@@ -30,8 +34,8 @@ public class IndexerEntity {
             indexRequest.source(jsonMap);
 
             IndexResponse indexResponse = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
-            System.out.println("Index Response status: " + indexResponse.status().getStatus());
-            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            LOGGER.debug("Index Response status: " + indexResponse.status().getStatus());
+            LOGGER.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }
         catch (Exception e) {
             e.printStackTrace();

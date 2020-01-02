@@ -1,10 +1,10 @@
 package boundaries;
 
-public class DocumentMessageBoundary {
+public class DocumentMessage {
 
     private String message;
 
-    public DocumentMessageBoundary() { }
+    public DocumentMessage() { }
 
     public String getMessage() {
         return message;

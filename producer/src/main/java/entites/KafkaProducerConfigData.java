@@ -1,11 +1,11 @@
 package entites;
 
-public class ProducerConfigEntity {
+public class KafkaProducerConfigData {
     private String host;
     private String id;
     private int port;
 
-    public ProducerConfigEntity() {
+    public KafkaProducerConfigData() {
     }
 
     public String getHost() {

@@ -33,7 +33,6 @@ public class EsIndexer implements MessageIndexer {
 
         try {
             IndexResponse indexResponse = elasticClient.index(indexRequest, RequestOptions.DEFAULT);
-            System.out.println("Message inserted into " + indexName);
             LOGGER.debug("Index Response status: " + indexResponse.status().getStatus());
             LOGGER.debug("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         }

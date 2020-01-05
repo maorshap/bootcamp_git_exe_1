@@ -69,9 +69,6 @@ public class SearchResource {
         searchSourceBuilder.query(boolQueryBuilder);
 
         Account account = AccountServiceClient.getAccountFromDB(token);
-        System.out.println("!!!!!!!!!!!!!!!!!!!!");
-        System.out.println(account.getEsIndexName());
-        System.out.println("!!!!!!!!!!!!!!!!!!!!");
         String indexName = account.getEsIndexName().toLowerCase();
         SearchRequest searchRequest = new SearchRequest(indexName);
         searchRequest.source(searchSourceBuilder);

@@ -1,6 +1,7 @@
 package entities;
 
 import Interfaces.MessageIndexer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,11 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import java.util.Map;
+
 import static java.util.Objects.requireNonNull;
 
 public class KafkaConsumer {
+
     private final static int CONSUMER_POLL_TIMEOUT = 1000;
-    private static Logger LOGGER = LoggerFactory.getLogger(KafkaConsumer.class);
+    private final static String INDEX_NAME_KEY = "esIndexName";
+    private final static String MESSAGE_KEY = "message";
+    private final static Logger LOGGER = LoggerFactory.getLogger(KafkaConsumer.class);
+
     private final Consumer<Integer, String> consumer;
     private final MessageIndexer messageIndexer;
 
@@ -45,7 +52,23 @@ public class KafkaConsumer {
         }
     }
 
+
     private void handleRecord(ConsumerRecord<Integer, String> record) {
-        messageIndexer.indexMessage(record.value());
+        ObjectMapper mapper = new ObjectMapper();
+        String indexName;
+        String message;
+        try{
+            Map<String, String> jsonMap = mapper.readValue(record.value(), Map.class);
+
+            indexName = jsonMap.remove(INDEX_NAME_KEY).toLowerCase();
+           // message = map.get(MESSAGE_KEY);
+            //String jsonMessage = "{\"message\":\"" + message + "\"}";
+
+            messageIndexer.indexMessage(indexName, jsonMap);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
+
 }

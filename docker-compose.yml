@@ -75,16 +75,31 @@ services:
       dockerfile: indexer/Dockerfile
     container_name: consumer_container
 
-#  db:
-#    image: 'mysql:5.6.34'
-#    restart: always
-#    environment:
-#      MYSQL_DATABASE: 'db'
-#      MYSQL_USER: 'user'
-#      MYSQL_PASSWORD: 'pass'
-#      MYSQL_ROOT_PASSWORD: 'pass'
-#    ports:
-#      - "3306:3306"
+  db:
+    image: 'mysql:5.6.34'
+    restart: always
+    environment:
+      MYSQL_DATABASE: bootcamp_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 1234
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./infrastructure/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  account_service:
+    build:
+      context: .
+        # context: ./accounts-service
+        # dockerfile: Dockerfile
+      dockerfile: account-service/Dockerfile
+    depends_on:
+      - db
+    container_name: account-service_container
+    ports:
+      - "8090:8090"
+
 
 volumes:
   esdata1:

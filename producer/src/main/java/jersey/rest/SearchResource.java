@@ -2,6 +2,9 @@ package jersey.rest;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import clients.AccountServiceClient;
+import entites.Account;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -15,6 +18,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -31,7 +35,6 @@ import static java.util.Objects.requireNonNull;
 @Path("bootcamp")
 public class SearchResource {
 
-    private final static String INDEX_NAME = "messages";
     private final RestHighLevelClient elasticsearchClient;
 
     @Inject
@@ -46,14 +49,14 @@ public class SearchResource {
      * @return Response invoke by Search
      */
     @GET
-    @Path("search")
+    @Path("search/{token}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchDocument(@Context UriInfo uriInfo) {
-        SearchRequest searchRequest = buildSearchRequest(uriInfo);
+    public Response searchDocument(@Context UriInfo uriInfo, @PathParam("token") String token) {
+        SearchRequest searchRequest = buildSearchRequest(uriInfo, token);
         return buildResponse(searchRequest);
     }
 
-    private SearchRequest buildSearchRequest(UriInfo uriInfo) {
+    private SearchRequest buildSearchRequest(UriInfo uriInfo, String token) {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
 
         MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
@@ -65,7 +68,12 @@ public class SearchResource {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(boolQueryBuilder);
 
-        SearchRequest searchRequest = new SearchRequest(INDEX_NAME);
+        Account account = AccountServiceClient.getAccountFromDB(token);
+        System.out.println("!!!!!!!!!!!!!!!!!!!!");
+        System.out.println(account.getEsIndexName());
+        System.out.println("!!!!!!!!!!!!!!!!!!!!");
+        String indexName = account.getEsIndexName().toLowerCase();
+        SearchRequest searchRequest = new SearchRequest(indexName);
         searchRequest.source(searchSourceBuilder);
 
         return searchRequest;
@@ -81,7 +89,7 @@ public class SearchResource {
 
             SearchHits searchHits = searchResponse.getHits();
             for (SearchHit hit : searchHits)
-                sb.append(hit).append("\n");
+                sb.append(hit.getSourceAsMap()).append("\n");
         }
         catch(Exception e){
             e.printStackTrace();

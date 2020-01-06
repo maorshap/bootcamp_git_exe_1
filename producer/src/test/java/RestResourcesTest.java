@@ -28,9 +28,7 @@ public class RestResourcesTest {
 
 
     @Test
-    public void testIndexAndSearchOfDocument() throws InterruptedException {
-
-        //Create account
+    public void testIndexAndSearchOfDocument(){
         String accountToken = createAccount();
 
         String generatedString = RandomStringUtils.random(15, true, false);

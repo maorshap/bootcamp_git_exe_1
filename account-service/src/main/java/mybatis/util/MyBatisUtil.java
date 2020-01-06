@@ -8,11 +8,11 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import java.io.IOException;
 import java.io.Reader;
 
-public class MybatisUtil {
+public class MyBatisUtil {
     private static SqlSessionFactory sqlSessionFactory;
 
     static {
-        String resource = "mybatis-config.xml";
+        String resource = "mybatis/mybatis-config.xml";
         Reader reader = null;
 
         try {

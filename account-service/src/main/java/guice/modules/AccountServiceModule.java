@@ -16,5 +16,6 @@ public class AccountServiceModule extends AbstractModule {
     @Override
     protected void configure() {
         install(new JerseyServerModule(jerseyConfigEntity.getPackagePath(), jerseyConfigEntity.getPort()));
+        install(new MyBatisAccountModule());
     }
 }

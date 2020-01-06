@@ -1,9 +1,12 @@
 package jersey.rest;
 
 import boundaries.AccountName;
-import daos.AccountDao;
+import daos.MySqlAccountDao;
 import entities.Account;
+import interfaces.AccountDao;
 import org.apache.commons.lang3.RandomStringUtils;
+
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -21,6 +24,12 @@ import java.util.List;
 public class RestResources {
     private final static String ES_NAME_PREFIX = "logz";
     private final static int TOKEN_LENGTH = 32;
+    private final AccountDao accountDao;
+
+    @Inject
+    public RestResources(AccountDao accountDao){
+        this.accountDao = accountDao;
+    }
 
     @POST
     @Path("create-account")
@@ -29,9 +38,9 @@ public class RestResources {
     public Response createAccount(AccountName accountNameBoundary) {
         Account account = buildAccountEntity(accountNameBoundary);
 
-        AccountDao.getInstance().save(account);
+        accountDao.save(account);
 
-        List<Account> accounts = AccountDao.getInstance().getAccountByName(accountNameBoundary.getAccountName());
+        List<Account> accounts = accountDao.getAccountByName(accountNameBoundary.getAccountName());
 
         return Response.status(HttpURLConnection.HTTP_OK)
                 .entity(accounts.get(accounts.size() - 1))
@@ -42,7 +51,7 @@ public class RestResources {
     @Path("account/token/{token}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAccountByToken(@PathParam("token") String token) {
-        Account account = AccountDao.getInstance().getAccountByToken(token);
+        Account account = accountDao.getAccountByToken(token);
         if (account == null) {
             return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED)
                     .entity("There is no such account with the given token in the system.")

@@ -1,7 +1,6 @@
 package jersey.rest;
 
 import boundaries.AccountName;
-import daos.MySqlAccountDao;
 import entities.Account;
 import interfaces.AccountDao;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -36,11 +35,11 @@ public class RestResources {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createAccount(AccountName accountNameBoundary) {
-        Account account = buildAccountEntity(accountNameBoundary);
+        Account account = buildAccountEntity(accountNameBoundary.getAccountName());
 
         accountDao.save(account);
 
-        List<Account> accounts = accountDao.getAccountByName(accountNameBoundary.getAccountName());
+        List<Account> accounts = accountDao.getAccountByName(account.getName());
 
         return Response.status(HttpURLConnection.HTTP_OK)
                 .entity(accounts.get(accounts.size() - 1))
@@ -63,15 +62,13 @@ public class RestResources {
 
     }
 
-    private Account buildAccountEntity(AccountName accountNameBoundary) {
-        Account account = new Account();
-
+    private Account buildAccountEntity(String accountName) {
         StringBuilder esIndexNameBuilder = new StringBuilder();
         esIndexNameBuilder.append(ES_NAME_PREFIX).append("-").append(RandomStringUtils.random(TOKEN_LENGTH, true, false));
 
-        account.setName(accountNameBoundary.getAccountName());
-        account.setToken(RandomStringUtils.random(TOKEN_LENGTH, true, false));
-        account.setEsIndexName(esIndexNameBuilder.toString());
+        String token = RandomStringUtils.random(TOKEN_LENGTH, true, false);
+
+        Account account = new Account(accountName, token, esIndexNameBuilder.toString());
 
         return account;
     }

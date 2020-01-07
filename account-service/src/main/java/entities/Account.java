@@ -9,35 +9,25 @@ public class Account {
     public Account() {
     }
 
-    public int getId() {
-        return id;
+    public Account(String name, String token, String esIndexName) {
+        this.name = name;
+        this.token = token;
+        this.esIndexName = esIndexName;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public int getId() {
+        return id;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getToken() {
         return token;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     public String getEsIndexName() {
         return esIndexName;
-    }
-
-    public void setEsIndexName(String esIndexName) {
-        this.esIndexName = esIndexName;
     }
 }

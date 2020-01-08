@@ -3,13 +3,12 @@ package jersey.rest;
 import boundaries.ShipLogResponse;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import entites.ServerConfigData;
+import entities.ServerConfigData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

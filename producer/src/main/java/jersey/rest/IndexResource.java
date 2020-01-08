@@ -1,15 +1,16 @@
 package jersey.rest;
 
 import boundaries.DocumentMessage;
-import clients.AccountServiceClient;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import entites.Account;
-import entites.ServerConfigData;
+import clients.AccountServiceClient;
+import entities.Account;
+import entities.ServerConfigData;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import utils.JsonParser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -40,7 +41,6 @@ public class IndexResource {
         this.serverConfigData = requireNonNull(serverConfigData);
     }
 
-
     /**
      * <p>"/index" entry point.</p>
      * <p>Index Document into Kafka cluster.</p>
@@ -67,10 +67,10 @@ public class IndexResource {
 
         Account account = AccountServiceClient.getAccountFromDB(token);
         sourceToIndex.put("esIndexName", account.getEsIndexName().toLowerCase());
-        ObjectMapper objectMapper = new ObjectMapper();
+
 
         try {
-            String recordMsg = objectMapper.writeValueAsString(sourceToIndex);
+            String recordMsg = JsonParser.toJsonString(sourceToIndex);
             ProducerRecord producerRecord = new ProducerRecord(serverConfigData.getKafkaTopicName(), messageCounter, recordMsg);
             producer.send(producerRecord);
             responseStatus = HttpURLConnection.HTTP_ACCEPTED;

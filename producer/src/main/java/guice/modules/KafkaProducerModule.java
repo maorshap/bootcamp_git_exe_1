@@ -2,12 +2,12 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.util.ConfigurationLoader;
-import entites.KafkaProducerConfigData;
+import entities.KafkaProducerConfigData;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import utils.JsonParser;
 
 import java.util.Properties;
 
@@ -17,7 +17,7 @@ public class KafkaProducerModule extends AbstractModule {
     private final KafkaProducerConfigData producerConfigEntity;
 
     public KafkaProducerModule(){
-        this.producerConfigEntity = ConfigurationLoader.load(PRODUCER_CONFIG_FILE_NAME, KafkaProducerConfigData.class);
+        this.producerConfigEntity = JsonParser.fromJsonFile(PRODUCER_CONFIG_FILE_NAME, KafkaProducerConfigData.class);
     }
 
     @Provides

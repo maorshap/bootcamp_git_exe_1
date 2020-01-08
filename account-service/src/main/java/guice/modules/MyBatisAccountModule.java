@@ -1,7 +1,6 @@
 package guice.modules;
 
 import com.google.inject.name.Names;
-import configuration.util.ConfigurationLoader;
 import daos.MySqlAccountDao;
 import interfaces.AccountDao;
 import mybatis.mappers.AccountMapper;
@@ -11,6 +10,7 @@ import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
 import org.mybatis.guice.MyBatisModule;
 import org.mybatis.guice.datasource.builtin.PooledDataSourceProvider;
 import org.mybatis.guice.datasource.helper.JdbcHelper;
+import utils.JsonParser;
 
 import java.util.Properties;
 
@@ -19,7 +19,7 @@ public class MyBatisAccountModule extends MyBatisModule {
     private final static String MY_BATIS_CONFIG_FILE = "mybatis/mybatis.config";
 
     public MyBatisAccountModule(){
-        this.myBatisProperties = ConfigurationLoader.load(MY_BATIS_CONFIG_FILE, Properties.class);
+        this.myBatisProperties = JsonParser.fromJsonFile(MY_BATIS_CONFIG_FILE, Properties.class);
     }
 
     @Override

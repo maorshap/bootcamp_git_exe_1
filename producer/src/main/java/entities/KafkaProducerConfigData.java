@@ -1,4 +1,4 @@
-package entites;
+package entities;
 
 public class KafkaProducerConfigData {
     private String host;

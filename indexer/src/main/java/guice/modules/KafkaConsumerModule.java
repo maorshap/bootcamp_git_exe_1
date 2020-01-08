@@ -2,13 +2,13 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.util.ConfigurationLoader;
 import entities.KafkaConsumerConfigData;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import utils.JsonParser;
 
 import java.util.Collections;
 import java.util.Properties;
@@ -19,7 +19,7 @@ public class KafkaConsumerModule extends AbstractModule {
     private final KafkaConsumerConfigData kafkaConsumerConfigData;
 
     public KafkaConsumerModule(){
-        this.kafkaConsumerConfigData = ConfigurationLoader.load(CONSUMER_CONFIG_FILE_NAME, KafkaConsumerConfigData.class);
+        this.kafkaConsumerConfigData = JsonParser.fromJsonFile(CONSUMER_CONFIG_FILE_NAME, KafkaConsumerConfigData.class);
     }
 
     @Provides

@@ -1,7 +1,6 @@
 package entities;
 
 import Interfaces.MessageIndexer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -9,6 +8,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import utils.JsonParser;
 
 
 import java.util.Map;
@@ -25,6 +25,7 @@ public class KafkaConsumer {
     private final Consumer<Integer, String> consumer;
     private final MessageIndexer messageIndexer;
 
+
     @Inject
     public KafkaConsumer(Consumer<Integer, String> consumer, MessageIndexer messageIndexer) {
         this.consumer = requireNonNull(consumer);
@@ -37,7 +38,6 @@ public class KafkaConsumer {
     public void pullRecords() {
         while (true) {
             ConsumerRecords<Integer, String> consumerRecords = consumer.poll(CONSUMER_POLL_TIMEOUT);
-
             consumerRecords.forEach(record -> {
                 LOGGER.debug("Record Key " + record.key());
                 LOGGER.debug("Record value " + record.value());
@@ -54,19 +54,12 @@ public class KafkaConsumer {
 
 
     private void handleRecord(ConsumerRecord<Integer, String> record) {
-        ObjectMapper mapper = new ObjectMapper();
-        String indexName;
-        String message;
-        try{
-            Map<String, String> jsonMap = mapper.readValue(record.value(), Map.class);
-
-            indexName = jsonMap.remove(INDEX_NAME_KEY).toLowerCase();
-           // message = map.get(MESSAGE_KEY);
-            //String jsonMessage = "{\"message\":\"" + message + "\"}";
-
+        try {
+            Map<String, String> jsonMap = JsonParser.fromJsonString(record.value(), Map.class);
+            String indexName = jsonMap.remove(INDEX_NAME_KEY).toLowerCase();
             messageIndexer.indexMessage(indexName, jsonMap);
         }
-        catch(Exception e){
+        catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -2,12 +2,12 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.util.ConfigurationLoader;
 import entities.EsIndexerConfigData;
 import entities.EsClientConfigData;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import utils.JsonParser;
 
 public class ElasticModule extends AbstractModule {
     public final static String ELASTICSEARCH_CONFIG_FILE_NAME = "elasticsearch.config";
@@ -17,8 +17,8 @@ public class ElasticModule extends AbstractModule {
     private final EsIndexerConfigData esIndexerConfigData;
 
     public ElasticModule() {
-        this.esClientConfigData = ConfigurationLoader.load(ELASTICSEARCH_CONFIG_FILE_NAME, EsClientConfigData.class);
-        this.esIndexerConfigData = ConfigurationLoader.load(ELASTIC_PRODUCER_CONFIG_FILE_NAME, EsIndexerConfigData.class);
+        this.esClientConfigData = JsonParser.fromJsonFile(ELASTICSEARCH_CONFIG_FILE_NAME, EsClientConfigData.class);
+        this.esIndexerConfigData = JsonParser.fromJsonFile(ELASTIC_PRODUCER_CONFIG_FILE_NAME, EsIndexerConfigData.class);
     }
 
     @Provides

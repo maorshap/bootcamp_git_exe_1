@@ -1,8 +1,8 @@
 package guice.modules;
 
 import com.google.inject.AbstractModule;
-import configuration.util.ConfigurationLoader;
 import entities.JerseyConfigData;
+import utils.JsonParser;
 
 public class AccountServiceModule extends AbstractModule {
 
@@ -10,7 +10,7 @@ public class AccountServiceModule extends AbstractModule {
     private final JerseyConfigData jerseyConfigEntity;
 
     public AccountServiceModule(){
-        this.jerseyConfigEntity = ConfigurationLoader.load(JERSEY_CONFIG_FILE_NAME, JerseyConfigData.class);
+        this.jerseyConfigEntity = JsonParser.fromJsonFile(JERSEY_CONFIG_FILE_NAME, JerseyConfigData.class);
     }
 
     @Override

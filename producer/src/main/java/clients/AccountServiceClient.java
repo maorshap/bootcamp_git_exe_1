@@ -1,12 +1,13 @@
 package clients;
 
-import entites.Account;
+import entities.Account;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 
 public class AccountServiceClient {
+
     private AccountServiceClient(){}
 
     public static Account getAccountFromDB(String token){

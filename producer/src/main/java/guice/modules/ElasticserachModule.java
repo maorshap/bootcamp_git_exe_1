@@ -2,11 +2,11 @@ package guice.modules;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import configuration.util.ConfigurationLoader;
-import entites.ElasticClientConfigData;
+import entities.ElasticClientConfigData;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import utils.JsonParser;
 
 public class ElasticserachModule extends AbstractModule {
 
@@ -14,7 +14,7 @@ public class ElasticserachModule extends AbstractModule {
     private final ElasticClientConfigData elasticClientConfigData;
 
     public ElasticserachModule(){
-        this.elasticClientConfigData = ConfigurationLoader.load(ELASTIC_CONFIG_FILE_NAME, ElasticClientConfigData.class);
+        this.elasticClientConfigData = JsonParser.fromJsonFile(ELASTIC_CONFIG_FILE_NAME, ElasticClientConfigData.class);
     }
 
     @Provides

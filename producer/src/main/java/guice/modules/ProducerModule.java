@@ -1,10 +1,9 @@
 package guice.modules;
 
-import configuration.util.ConfigurationLoader;
-import entites.ServerConfigData;
-
+import entities.ServerConfigData;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
+import utils.JsonParser;
 
 public class ProducerModule extends AbstractModule {
 
@@ -13,7 +12,7 @@ public class ProducerModule extends AbstractModule {
     private final String packagePath;
 
     public ProducerModule(String packagePath) {
-        this.serverConfigData = ConfigurationLoader.load(SERVER_CONFIG_FILE_NAME, ServerConfigData.class);
+        this.serverConfigData = JsonParser.fromJsonFile(SERVER_CONFIG_FILE_NAME, ServerConfigData.class);
         this.packagePath = packagePath;
     }
 

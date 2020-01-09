@@ -1,6 +1,2 @@
 rootProject.name = 'bootcamp_git_exe_1'
-include 'producer'
-include 'Indexer'
-include 'infrastructure'
-include 'account-service'
 

@@ -26,20 +26,34 @@ public class RestResourcesTest {
         return ClientBuilder.newClient().target(url);
     }
 
-
     @Test
-    public void testIndexAndSearchOfDocument(){
+    public void testSearchWithoutIndexOfDocument(){
+        //Creation of new Account
         String accountToken = createAccount();
 
         String generatedString = RandomStringUtils.random(15, true, false);
         String userAgent = "Macintosh";
 
+        //Retrieve of the document from the account's elasticsearch index.
+        await().atMost(15, TimeUnit.SECONDS).until(() -> isDocumentIndexed(generatedString, userAgent, accountToken));
+    }
+
+    @Test
+    public void testIndexAndSearchOfDocument(){
+        //Creation of new Account
+        String accountToken = createAccount();
+
+        String generatedString = RandomStringUtils.random(15, true, false);
+        String userAgent = "Macintosh";
+
+        //Index of the document to the account's elasticsearch index.
         Response indexResponse = insertDocumentIntoEs(generatedString, userAgent, accountToken);
+
         assertNotNull(indexResponse);
         assertTrue(indexResponse.getStatus() >= 200 && indexResponse.getStatus() < 300);
-
         LOGGER.debug("The message " + generatedString + " has been indexed successfully");
 
+        //Retrieve of the document from the account's elasticsearch index.
         await().atMost(15, TimeUnit.SECONDS).until(() -> isDocumentIndexed(generatedString, userAgent, accountToken));
     }
 

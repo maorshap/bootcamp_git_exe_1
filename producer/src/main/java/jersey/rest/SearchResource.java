@@ -3,8 +3,10 @@ package jersey.rest;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import Exceptions.NoSuchAccountException;
 import clients.AccountServiceClient;
 import entities.Account;
+import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -28,6 +30,7 @@ import javax.ws.rs.core.UriInfo;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -42,6 +45,7 @@ public class SearchResource {
         this.elasticsearchClient = requireNonNull(elasticsearchClient);
     }
 
+
     /**
      * "/search" entry point.
      *
@@ -52,31 +56,35 @@ public class SearchResource {
     @Path("search/{token}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchDocument(@Context UriInfo uriInfo, @PathParam("token") String token) {
-        SearchRequest searchRequest = buildSearchRequest(uriInfo, token);
-        return buildResponse(searchRequest);
+        SearchRequest searchRequest;
+        try {
+            searchRequest = buildSearchRequest(uriInfo, token);
+        }
+        catch (NoSuchAccountException e) {
+            return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED)
+                    .entity(e.getMessage())
+                    .build();
+        }
+
+        return buildSearchResponse(searchRequest);
     }
 
-    private SearchRequest buildSearchRequest(UriInfo uriInfo, String token) {
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-
-        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
-        for (Map.Entry<String, List<String>> param : queryParams.entrySet()) {
-            QueryBuilder curQuery = QueryBuilders.matchQuery(param.getKey(), param.getValue().iterator().next());
-            boolQueryBuilder.must(curQuery);
-        }
+    private SearchRequest buildSearchRequest(UriInfo uriInfo, String token) throws NoSuchAccountException {
+        BoolQueryBuilder boolQueryBuilder = createBoolQueryBuilder(uriInfo);
 
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(boolQueryBuilder);
 
-        Account account = AccountServiceClient.getAccountFromDB(token);
+        Account account = getAccountFromDB(token);
         String indexName = account.getEsIndexName().toLowerCase();
+
         SearchRequest searchRequest = new SearchRequest(indexName);
         searchRequest.source(searchSourceBuilder);
 
         return searchRequest;
     }
 
-    private Response buildResponse(SearchRequest request) {
+    private Response buildSearchResponse(SearchRequest request) {
         StringBuilder sb = new StringBuilder();
         int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
 
@@ -88,6 +96,10 @@ public class SearchResource {
             for (SearchHit hit : searchHits)
                 sb.append(hit.getSourceAsMap()).append("\n");
         }
+        catch (ElasticsearchStatusException e) {
+            responseStatus = HttpURLConnection.HTTP_OK;
+            sb.append("The Account is empty from messages");
+        }
         catch (Exception e) {
             e.printStackTrace();
         }
@@ -97,5 +109,26 @@ public class SearchResource {
                     .build();
         }
 
+    }
+
+    private Account getAccountFromDB(String token) throws NoSuchAccountException {
+        Optional<Account> optionalAccount = AccountServiceClient.getAccountFromDB(token);
+        if (!optionalAccount.isPresent()) {
+            throw new NoSuchAccountException("There is no such account with the given token in the database");
+        }
+        return optionalAccount.get();
+    }
+
+
+    private BoolQueryBuilder createBoolQueryBuilder(UriInfo uriInfo) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+        for (Map.Entry<String, List<String>> param : queryParams.entrySet()) {
+            QueryBuilder curQuery = QueryBuilders.matchQuery(param.getKey(), param.getValue().iterator().next());
+            boolQueryBuilder.must(curQuery);
+        }
+
+        return boolQueryBuilder;
     }
 }

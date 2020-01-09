@@ -33,7 +33,7 @@ public class GetAccountResource {
         Account account = accountDao.getAccountByToken(token);
         if (account == null) {
             return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED)
-                    .entity("There is no such account with the given token in the system.")
+                    .entity("There is no such account with the given token in the database.")
                     .build();
         }
         return Response.status(HttpURLConnection.HTTP_OK)

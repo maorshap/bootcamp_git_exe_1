@@ -11,16 +11,8 @@
         <result property = "esIndexName" column = "es_index_name"/>
     </resultMap>
 
-    <select id = "getAccountById" parameterType = "int" resultMap = "result">
-        SELECT * FROM Account WHERE id = #{id}
-    </select>
-
     <select id = "getAccountByToken" parameterType = "String" resultMap = "result">
         SELECT * FROM Account WHERE token = #{token}
-    </select>
-
-    <select id = "getAccountByName" parameterType = "String" resultMap = "result">
-        SELECT * FROM Account WHERE name = #{name}
     </select>
 
     <insert id = "insertAccount" parameterType = "entities.Account">

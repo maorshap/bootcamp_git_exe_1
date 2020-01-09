@@ -15,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.net.HttpURLConnection;
-import java.util.List;
 
 import static java.util.Objects.requireNonNull;
 
@@ -36,14 +35,14 @@ public class CreateAccountResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createAccount(AccountName accountNameBoundary) {
-        Account account = buildAccountEntity(accountNameBoundary.getAccountName());
+        Account accountToInsert = buildAccountEntity(accountNameBoundary.getAccountName());
 
-        accountDao.save(account);
+        accountDao.save(accountToInsert);
 
-        List<Account> accounts = accountDao.getAccountByName(account.getName());
+        Account accountFromDb = accountDao.getAccountByToken(accountToInsert.getToken());
 
         return Response.status(HttpURLConnection.HTTP_OK)
-                .entity(accounts.get(accounts.size() - 1))
+                .entity(accountFromDb)
                 .build();
     }
 

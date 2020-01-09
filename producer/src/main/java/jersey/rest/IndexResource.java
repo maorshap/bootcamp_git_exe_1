@@ -1,5 +1,7 @@
 package jersey.rest;
 
+import Exceptions.InvalidMessageException;
+import Exceptions.NoSuchAccountException;
 import boundaries.DocumentMessage;
 
 import javax.inject.Inject;
@@ -24,6 +26,7 @@ import javax.ws.rs.core.Response;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -36,7 +39,7 @@ public class IndexResource {
     private static int messageCounter = 1;
 
     @Inject
-    public IndexResource(KafkaProducer<Integer, String> producer, ServerConfigData serverConfigData){
+    public IndexResource(KafkaProducer<Integer, String> producer, ServerConfigData serverConfigData) {
         this.producer = requireNonNull(producer);
         this.serverConfigData = requireNonNull(serverConfigData);
     }
@@ -44,8 +47,9 @@ public class IndexResource {
     /**
      * <p>"/index" entry point.</p>
      * <p>Index Document into Kafka cluster.</p>
+     *
      * @param documentMessage - Message content to be index.
-     * @param userAgent - Send by agent
+     * @param userAgent       - Send by agent
      * @return Response invoked by Index action
      */
     @POST
@@ -57,24 +61,25 @@ public class IndexResource {
         int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
         StringBuilder sb = new StringBuilder();
 
-        Map<String, Object> sourceToIndex = buildSourceMap(documentMessage, userAgent);
-
-        if (sourceToIndex == null) {
-            return Response.status(HttpURLConnection.HTTP_BAD_REQUEST)
-                    .entity("The message body is empty.")
-                    .build();
-        }
-
-        Account account = AccountServiceClient.getAccountFromDB(token);
-        sourceToIndex.put("esIndexName", account.getEsIndexName().toLowerCase());
-
-
         try {
+            Map<String, Object> sourceToIndex = buildSourceMap(documentMessage, userAgent);
+            Account account = getAccountFromDB(token);
+            sourceToIndex.put("esIndexName", account.getEsIndexName().toLowerCase());
             String recordMsg = JsonParser.toJsonString(sourceToIndex);
+
             ProducerRecord producerRecord = new ProducerRecord(serverConfigData.getKafkaTopicName(), messageCounter, recordMsg);
             producer.send(producerRecord);
+
             responseStatus = HttpURLConnection.HTTP_ACCEPTED;
             sb.append("The message has been sent to kafka successfully.");
+        }
+        catch (InvalidMessageException e) {
+            return Response.status(HttpURLConnection.HTTP_BAD_REQUEST)
+                    .entity(e.getMessage())
+                    .build();
+        }
+        catch (NoSuchAccountException e) {
+            sb.append(e.getMessage());
         }
         catch (Exception e) {
             sb.append("The message has not been sent to kafka successfully - error occurred.");
@@ -90,10 +95,10 @@ public class IndexResource {
     }
 
 
-    private Map<String, Object> buildSourceMap(DocumentMessage documentMessage, String userAgent) {
+    private Map<String, Object> buildSourceMap(DocumentMessage documentMessage, String userAgent) throws InvalidMessageException {
         String message = documentMessage.getMessage();
         if (!checkStringsValidation(message, userAgent)) {
-            return null;
+            throw new InvalidMessageException("The message body is empty");
         }
 
         Map<String, Object> jsonAsMap = new HashMap<>();
@@ -109,6 +114,14 @@ public class IndexResource {
                 return false;
         }
         return true;
+    }
+
+    private Account getAccountFromDB(String token) throws NoSuchAccountException {
+        Optional<Account> optionalAccount = AccountServiceClient.getAccountFromDB(token);
+        if (!optionalAccount.isPresent()) {
+            throw new NoSuchAccountException("There is no such account with the given token in the database");
+        }
+        return optionalAccount.get();
     }
 
 }

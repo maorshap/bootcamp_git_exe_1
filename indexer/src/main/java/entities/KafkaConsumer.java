@@ -19,7 +19,6 @@ public class KafkaConsumer {
 
     private final static int CONSUMER_POLL_TIMEOUT = 1000;
     private final static String INDEX_NAME_KEY = "esIndexName";
-    private final static String MESSAGE_KEY = "message";
     private final static Logger LOGGER = LoggerFactory.getLogger(KafkaConsumer.class);
 
     private final Consumer<Integer, String> consumer;
@@ -33,7 +32,7 @@ public class KafkaConsumer {
     }
 
     /**
-     * Continues pull of record from Kafka broker.
+     * Continues pull of records from Kafka broker.
      */
     public void pullRecords() {
         while (true) {

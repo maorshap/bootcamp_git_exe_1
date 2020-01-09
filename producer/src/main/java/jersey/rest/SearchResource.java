@@ -38,7 +38,7 @@ public class SearchResource {
     private final RestHighLevelClient elasticsearchClient;
 
     @Inject
-    public SearchResource(RestHighLevelClient elasticsearchClient){
+    public SearchResource(RestHighLevelClient elasticsearchClient) {
         this.elasticsearchClient = requireNonNull(elasticsearchClient);
     }
 
@@ -76,11 +76,11 @@ public class SearchResource {
         return searchRequest;
     }
 
-    private Response buildResponse(SearchRequest request){
+    private Response buildResponse(SearchRequest request) {
         StringBuilder sb = new StringBuilder();
         int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
 
-        try{
+        try {
             SearchResponse searchResponse = elasticsearchClient.search(request, RequestOptions.DEFAULT);
             responseStatus = HttpURLConnection.HTTP_OK;
 
@@ -88,7 +88,7 @@ public class SearchResource {
             for (SearchHit hit : searchHits)
                 sb.append(hit.getSourceAsMap()).append("\n");
         }
-        catch(Exception e){
+        catch (Exception e) {
             e.printStackTrace();
         }
         finally {

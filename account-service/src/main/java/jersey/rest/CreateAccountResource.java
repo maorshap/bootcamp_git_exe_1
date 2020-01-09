@@ -8,26 +8,27 @@ import org.apache.commons.lang3.RandomStringUtils;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.net.HttpURLConnection;
 import java.util.List;
 
+import static java.util.Objects.requireNonNull;
+
 @Singleton
 @Path("account-service/")
-public class RestResources {
+public class CreateAccountResource {
     private final static String ES_NAME_PREFIX = "logz";
     private final static int TOKEN_LENGTH = 32;
     private final AccountDao accountDao;
 
     @Inject
-    public RestResources(AccountDao accountDao){
-        this.accountDao = accountDao;
+    public CreateAccountResource(AccountDao accountDao){
+        this.accountDao = requireNonNull(accountDao);
     }
 
     @POST
@@ -46,22 +47,6 @@ public class RestResources {
                 .build();
     }
 
-    @GET
-    @Path("account/token/{token}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getAccountByToken(@PathParam("token") String token) {
-        Account account = accountDao.getAccountByToken(token);
-        if (account == null) {
-            return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED)
-                    .entity("There is no such account with the given token in the system.")
-                    .build();
-        }
-        return Response.status(HttpURLConnection.HTTP_OK)
-                .entity(account)
-                .build();
-
-    }
-
     private Account buildAccountEntity(String accountName) {
         StringBuilder esIndexNameBuilder = new StringBuilder();
         esIndexNameBuilder.append(ES_NAME_PREFIX).append("-").append(RandomStringUtils.random(TOKEN_LENGTH, true, false));
@@ -72,4 +57,6 @@ public class RestResources {
 
         return account;
     }
+
+
 }

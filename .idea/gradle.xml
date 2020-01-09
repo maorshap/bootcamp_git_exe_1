@@ -4,14 +4,21 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <option name="delegatedBuild" value="true" />
+        <option name="testRunner" value="PLATFORM" />
         <option name="disableWrapperSourceDistributionNotification" value="true" />
         <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/account-service" />
+            <option value="$PROJECT_DIR$/indexer" />
+            <option value="$PROJECT_DIR$/infrastructure" />
+            <option value="$PROJECT_DIR$/producer" />
           </set>
         </option>
+        <option name="useAutoImport" value="true" />
         <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>

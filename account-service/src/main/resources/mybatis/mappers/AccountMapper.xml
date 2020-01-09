@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace = "mybatis.mappers.AccountMapper">
+
+    <resultMap id = "result" type = "entities.Account">
+        <result property = "id" column = "account_number"/>
+        <result property = "name" column = "name"/>
+        <result property = "token" column = "token"/>
+        <result property = "esIndexName" column = "es_index_name"/>
+    </resultMap>
+
+    <select id = "getAccountByToken" parameterType = "String" resultMap = "result">
+        SELECT * FROM Account WHERE token = #{token}
+    </select>
+
+    <insert id = "insertAccount" parameterType = "entities.Account">
+        INSERT into Account(name,token,es_index_name) VALUES(#{name}, #{token}, #{esIndexName})
+    </insert>
+
+</mapper>
+

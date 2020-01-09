@@ -1,0 +1,65 @@
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
+}
+
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+application{
+    mainClassName = 'ProducerMain'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.awaitility', name: 'awaitility', version: '3.0.0'
+
+    compile project(':infrastructure:')
+
+    //Logz.io Logging system dependencies
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
+    compile 'io.logz.log4j2:logzio-log4j2-appender:1.0.5'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.9.0'
+
+    //Asked by JUnit Tests for Json conversion to be made by Jackson (JAXB)
+    compile group: 'javax.activation', name: 'activation', version: '1.1'
+    compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.1'
+
+    //Guice + Jersey dependencies
+    compile 'io.logz:guice-jersey:1.0.9'
+
+    //ElasticSearch dependencies
+    compile 'org.elasticsearch:elasticsearch:5.6.0'
+    compile 'org.elasticsearch.client:elasticsearch-rest-high-level-client:6.8.5'
+
+    //Jersey Jackson dependency
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.17'
+
+    //Kafka
+    compile 'org.apache.kafka:kafka-clients:0.10.0.1'
+
+    //Generated Random String util
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': "$mainClassName"
+    }
+}
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': "$mainClassName"
+    }
+
+    transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer)
+}

@@ -75,9 +75,9 @@ public class RestResourcesTest {
 
         Response indexResponse = getWebTarget(PRODUCER_URL)
                 .path("index")
-                .path("/" + token)
                 .request(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.USER_AGENT, agentHeaderString)
+                .header("X-ACCOUNT-TOKEN", token)
                 .post(Entity.json(jsonString));
 
         return indexResponse;
@@ -85,10 +85,10 @@ public class RestResourcesTest {
 
     private Response pullDocumentFromEs(String message, String userAgent, String token){
         Response searchResponse = getWebTarget(PRODUCER_URL).path("search")
-                .path("/" + token)
                 .queryParam("message", message)
                 .queryParam("User-Agent", userAgent)
                 .request(MediaType.APPLICATION_JSON)
+                .header("X-ACCOUNT-TOKEN", token)
                 .get();
 
         return searchResponse;

@@ -74,11 +74,11 @@ public class IndexResource {
             sb.append("The message has been sent to kafka successfully.");
         }
         catch (InvalidMessageException e) {
-            return Response.status(HttpURLConnection.HTTP_BAD_REQUEST)
-                    .entity(e.getMessage())
-                    .build();
+            responseStatus = HttpURLConnection.HTTP_BAD_REQUEST;
+            sb.append(e.getMessage());
         }
         catch (NoSuchAccountException e) {
+            responseStatus = HttpURLConnection.HTTP_NO_CONTENT;
             sb.append(e.getMessage());
         }
         catch (Exception e) {

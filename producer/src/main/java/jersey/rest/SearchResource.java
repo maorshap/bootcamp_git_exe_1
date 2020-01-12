@@ -19,6 +19,7 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -53,9 +54,9 @@ public class SearchResource {
      * @return Response invoke by Search
      */
     @GET
-    @Path("search/{token}")
+    @Path("search")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response searchDocument(@Context UriInfo uriInfo, @PathParam("token") String token) {
+    public Response searchDocument(@Context UriInfo uriInfo, @HeaderParam("X-ACCOUNT-TOKEN") String token) {
         SearchRequest searchRequest;
         try {
             searchRequest = buildSearchRequest(uriInfo, token);
@@ -98,10 +99,11 @@ public class SearchResource {
         }
         catch (ElasticsearchStatusException e) {
             responseStatus = HttpURLConnection.HTTP_NO_CONTENT;
-            sb.append("The Account is empty from messages");
+            sb.append("The Account messages queue is empty from messages");
         }
         catch (Exception e) {
             e.printStackTrace();
+            sb.append(e.getMessage());
         }
         finally {
             return Response.status(responseStatus)

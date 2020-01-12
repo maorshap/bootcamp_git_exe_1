@@ -24,6 +24,7 @@ public class MySqlAccountDao implements AccountDao {
         accountMapper.insertAccount(account);
     }
 
+    //TODO::Change the return type to Optional<Account>.
     public Account getAccountByToken(String token){
         Account account = accountMapper.getAccountByToken(token);
         return account;

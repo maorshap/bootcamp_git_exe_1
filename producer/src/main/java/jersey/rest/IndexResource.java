@@ -53,10 +53,10 @@ public class IndexResource {
      * @return Response invoked by Index action
      */
     @POST
-    @Path("index/{token}")
+    @Path("index")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response indexDocument(DocumentMessage documentMessage, @HeaderParam("User-Agent") String userAgent, @PathParam("token") String token) {
+    public Response indexDocument(DocumentMessage documentMessage, @HeaderParam("User-Agent") String userAgent, @HeaderParam("X-ACCOUNT-TOKEN") String token) {
 
         int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
         StringBuilder sb = new StringBuilder();

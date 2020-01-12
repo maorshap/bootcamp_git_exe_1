@@ -97,7 +97,7 @@ public class SearchResource {
                 sb.append(hit.getSourceAsMap()).append("\n");
         }
         catch (ElasticsearchStatusException e) {
-            responseStatus = HttpURLConnection.HTTP_OK;
+            responseStatus = HttpURLConnection.HTTP_NO_CONTENT;
             sb.append("The Account is empty from messages");
         }
         catch (Exception e) {

@@ -1,7 +1,7 @@
 package jersey.rest;
 
 import entities.Account;
-import interfaces.AccountDao;
+import mybatis.daos.AccountDao;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -18,11 +18,11 @@ import static java.util.Objects.requireNonNull;
 
 @Singleton
 @Path("account-service/")
-public class GetAccountResource {
+public class SearchAccountResource {
     private final AccountDao accountDao;
 
     @Inject
-    public GetAccountResource(AccountDao accountDao){
+    public SearchAccountResource(AccountDao accountDao){
         this.accountDao = requireNonNull(accountDao);
     }
 
@@ -32,7 +32,7 @@ public class GetAccountResource {
     public Response getAccountByToken(@PathParam("token") String token) {
         Account account = accountDao.getAccountByToken(token);
         if (account == null) {
-            return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED)
+            return Response.status(HttpURLConnection.HTTP_NOT_FOUND)
                     .entity("There is no such account with the given token in the database.")
                     .build();
         }

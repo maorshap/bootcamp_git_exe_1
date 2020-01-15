@@ -12,13 +12,14 @@ import entities.Account;
 import entities.ServerConfigData;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import utils.JsonParser;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -34,14 +35,20 @@ import static java.util.Objects.requireNonNull;
 @Path("bootcamp")
 public class IndexResource {
 
-    private final KafkaProducer<Integer, String> producer;
-    private final ServerConfigData serverConfigData;
+    private static final String ACCOUNT_SERVICE_URL = "http://account_service:8090/account-service";
+
+    private static Logger LOGGER = LogManager.getLogger(IndexResource.class);
     private static int messageCounter = 1;
 
+    private final KafkaProducer<String, String> producer;
+    private final ServerConfigData serverConfigData;
+    private final AccountServiceClient accountServiceClient;
+
     @Inject
-    public IndexResource(KafkaProducer<Integer, String> producer, ServerConfigData serverConfigData) {
+    public IndexResource(KafkaProducer<String, String> producer, ServerConfigData serverConfigData) {
         this.producer = requireNonNull(producer);
         this.serverConfigData = requireNonNull(serverConfigData);
+        this.accountServiceClient = new AccountServiceClient(ACCOUNT_SERVICE_URL);
     }
 
     /**
@@ -57,41 +64,36 @@ public class IndexResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response indexDocument(DocumentMessage documentMessage, @HeaderParam("User-Agent") String userAgent, @HeaderParam("X-ACCOUNT-TOKEN") String token) {
-
-        int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
-        StringBuilder sb = new StringBuilder();
-
         try {
             Map<String, Object> sourceToIndex = buildSourceMap(documentMessage, userAgent);
-            Account account = getAccountFromDB(token);
-            sourceToIndex.put("esIndexName", account.getEsIndexName().toLowerCase());
             String recordMsg = JsonParser.toJsonString(sourceToIndex);
 
-            ProducerRecord producerRecord = new ProducerRecord(serverConfigData.getKafkaTopicName(), messageCounter, recordMsg);
-            producer.send(producerRecord);
+            Account account = getAccountFromDB(token);
+            String esIndexName = account.getEsIndexName().toLowerCase();
 
-            responseStatus = HttpURLConnection.HTTP_ACCEPTED;
-            sb.append("The message has been sent to kafka successfully.");
+            ProducerRecord producerRecord = new ProducerRecord(serverConfigData.getKafkaTopicName(), esIndexName, recordMsg);
+            producer.send(producerRecord);
         }
         catch (InvalidMessageException e) {
-            responseStatus = HttpURLConnection.HTTP_BAD_REQUEST;
-            sb.append(e.getMessage());
+            producer.flush();
+            LOGGER.error(e.getMessage());
+            return RestUtils.buildResponse(HttpURLConnection.HTTP_BAD_REQUEST, e.getMessage());
         }
         catch (NoSuchAccountException e) {
-            responseStatus = HttpURLConnection.HTTP_NO_CONTENT;
-            sb.append(e.getMessage());
+            producer.flush();
+            LOGGER.error(e.getMessage());
+            return RestUtils.buildResponse(HttpURLConnection.HTTP_UNAUTHORIZED, e.getMessage());
         }
         catch (Exception e) {
-            sb.append("The message has not been sent to kafka successfully - error occurred.");
-            e.printStackTrace();
-        }
-        finally {
             producer.flush();
-            //producer.close();
-            return Response.status(responseStatus)
-                    .entity(sb.toString())
-                    .build();
+            LOGGER.error(e.getMessage());
+            return RestUtils.buildResponse(HttpURLConnection.HTTP_INTERNAL_ERROR, "The message has not been sent to kafka successfully - error occurred.");
         }
+
+        producer.flush();
+        //producer.close();
+        return RestUtils.buildResponse(HttpURLConnection.HTTP_ACCEPTED, "The message has been sent to kafka successfully.");
+
     }
 
 
@@ -117,11 +119,12 @@ public class IndexResource {
     }
 
     private Account getAccountFromDB(String token) throws NoSuchAccountException {
-        Optional<Account> optionalAccount = AccountServiceClient.getAccountFromDB(token);
+        Optional<Account> optionalAccount = accountServiceClient.getAccountFromDB(token);
         if (!optionalAccount.isPresent()) {
             throw new NoSuchAccountException("There is no such account with the given token in the database");
         }
         return optionalAccount.get();
     }
+
 
 }

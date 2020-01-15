@@ -38,13 +38,17 @@ import static java.util.Objects.requireNonNull;
 @Path("bootcamp")
 public class SearchResource {
 
+    private static final String ACCOUNT_SERVICE_URL = "http://account_service:8090/account-service";
+
     private final RestHighLevelClient elasticsearchClient;
+    private final AccountServiceClient accountServiceClient;
+
 
     @Inject
     public SearchResource(RestHighLevelClient elasticsearchClient) {
         this.elasticsearchClient = requireNonNull(elasticsearchClient);
+        this.accountServiceClient = new AccountServiceClient(ACCOUNT_SERVICE_URL);
     }
-
 
     /**
      * "/search" entry point.
@@ -61,9 +65,7 @@ public class SearchResource {
             searchRequest = buildSearchRequest(uriInfo, token);
         }
         catch (NoSuchAccountException e) {
-            return Response.status(HttpURLConnection.HTTP_UNAUTHORIZED)
-                    .entity(e.getMessage())
-                    .build();
+            return  RestUtils.buildResponse(HttpURLConnection.HTTP_UNAUTHORIZED, e.getMessage());
         }
 
         return buildSearchResponse(searchRequest);
@@ -86,34 +88,26 @@ public class SearchResource {
 
     private Response buildSearchResponse(SearchRequest request) {
         StringBuilder sb = new StringBuilder();
-        int responseStatus = HttpURLConnection.HTTP_INTERNAL_ERROR;
 
         try {
             SearchResponse searchResponse = elasticsearchClient.search(request, RequestOptions.DEFAULT);
-            responseStatus = HttpURLConnection.HTTP_OK;
 
             SearchHits searchHits = searchResponse.getHits();
             for (SearchHit hit : searchHits)
                 sb.append(hit.getSourceAsMap()).append("\n");
         }
         catch (ElasticsearchStatusException e) {
-            responseStatus = HttpURLConnection.HTTP_NO_CONTENT;
-            sb.append("The Account messages queue is empty from messages");
+            return RestUtils.buildResponse(HttpURLConnection.HTTP_NO_CONTENT, "The Account messages queue is empty from messages");
         }
         catch (Exception e) {
             e.printStackTrace();
-            sb.append(e.getMessage());
         }
-        finally {
-            return Response.status(responseStatus)
-                    .entity(sb.toString())
-                    .build();
-        }
+        return RestUtils.buildResponse(HttpURLConnection.HTTP_OK, sb.toString());
 
     }
 
     private Account getAccountFromDB(String token) throws NoSuchAccountException {
-        Optional<Account> optionalAccount = AccountServiceClient.getAccountFromDB(token);
+        Optional<Account> optionalAccount = accountServiceClient.getAccountFromDB(token);
         if (!optionalAccount.isPresent()) {
             throw new NoSuchAccountException("There is no such account with the given token in the database");
         }
@@ -132,4 +126,5 @@ public class SearchResource {
 
         return boolQueryBuilder;
     }
+
 }

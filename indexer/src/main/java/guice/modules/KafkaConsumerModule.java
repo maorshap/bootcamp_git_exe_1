@@ -6,7 +6,6 @@ import entities.KafkaConsumerConfigData;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import utils.JsonParser;
 
@@ -23,7 +22,7 @@ public class KafkaConsumerModule extends AbstractModule {
     }
 
     @Provides
-    public Consumer<Integer, String> buildConsumer(){
+    public Consumer<String, String> buildConsumer(){
         Properties props = new Properties();
         StringBuilder sb = new StringBuilder();
         sb.append(kafkaConsumerConfigData.getHost())
@@ -32,11 +31,11 @@ public class KafkaConsumerModule extends AbstractModule {
 
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, sb.toString());
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaConsumerConfigData.getGroupId());
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
-        Consumer<Integer, String> consumer = new KafkaConsumer<>(props);
+        Consumer<String, String> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList(kafkaConsumerConfigData.getTopic()));
         return consumer;
     }

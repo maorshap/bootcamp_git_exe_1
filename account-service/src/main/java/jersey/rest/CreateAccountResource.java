@@ -1,8 +1,8 @@
 package jersey.rest;
 
-import boundaries.AccountName;
+import boundaries.CreateAccountRequest;
 import entities.Account;
-import interfaces.AccountDao;
+import mybatis.daos.AccountDao;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import javax.inject.Inject;
@@ -34,10 +34,10 @@ public class CreateAccountResource {
     @Path("create-account")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createAccount(AccountName accountNameBoundary) {
-        Account accountToInsert = buildAccountEntity(accountNameBoundary.getAccountName());
+    public Response createAccount(CreateAccountRequest createAccountRequestBoundary) {
+        Account accountToInsert = buildAccountEntity(createAccountRequestBoundary.getAccountName());
 
-        accountDao.save(accountToInsert);
+        accountDao.insertAccount(accountToInsert);
 
         Account accountFromDb = accountDao.getAccountByToken(accountToInsert.getToken());
 

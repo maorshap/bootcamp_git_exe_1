@@ -9,7 +9,7 @@ public class ServerJerseyModule extends AbstractModule {
     private final JerseyConfiguration jerseyConfiguration;
 
     public ServerJerseyModule(String packagePath, int port){
-      this.jerseyConfiguration = buildJerseyConfiguarion(packagePath, port);
+      this.jerseyConfiguration = buildJerseyConfiguration(packagePath, port);
     }
 
     @Override
@@ -17,7 +17,7 @@ public class ServerJerseyModule extends AbstractModule {
         install(new JerseyModule(jerseyConfiguration));
     }
 
-    private JerseyConfiguration buildJerseyConfiguarion(String path, int port){
+    private JerseyConfiguration buildJerseyConfiguration(String path, int port){
         return JerseyConfiguration.builder()
                 .addPackage(path)
                 .addPort(port)

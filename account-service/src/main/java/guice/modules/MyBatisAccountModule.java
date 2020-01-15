@@ -1,9 +1,7 @@
 package guice.modules;
 
 import com.google.inject.name.Names;
-import daos.MySqlAccountDao;
-import interfaces.AccountDao;
-import mybatis.mappers.AccountMapper;
+import mybatis.daos.AccountDao;
 import org.apache.ibatis.reflection.factory.DefaultObjectFactory;
 import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
@@ -24,7 +22,6 @@ public class MyBatisAccountModule extends MyBatisModule {
 
     @Override
     protected void initialize() {
-        bind(AccountDao.class).to(MySqlAccountDao.class);
         bind(DefaultObjectWrapperFactory.class);
         bind(DefaultObjectFactory.class);
 
@@ -33,6 +30,6 @@ public class MyBatisAccountModule extends MyBatisModule {
         bindDataSourceProviderType(PooledDataSourceProvider.class);
         Names.bindProperties(this.binder(), myBatisProperties);
 
-        addMapperClass(AccountMapper.class);
+        addMapperClass(AccountDao.class);
     }
 }

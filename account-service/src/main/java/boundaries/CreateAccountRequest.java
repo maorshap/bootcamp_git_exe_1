@@ -1,9 +1,9 @@
 package boundaries;
 
-public class AccountName {
+public class CreateAccountRequest {
     private String accountName;
 
-    public AccountName() {
+    public CreateAccountRequest() {
     }
 
     public String getAccountName() {

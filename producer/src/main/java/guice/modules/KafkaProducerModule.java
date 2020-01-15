@@ -5,7 +5,6 @@ import com.google.inject.Provides;
 import entities.KafkaProducerConfigData;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import utils.JsonParser;
 
@@ -21,7 +20,7 @@ public class KafkaProducerModule extends AbstractModule {
     }
 
     @Provides
-    public KafkaProducer<Integer, String> buildKafkaProducer() {
+    public KafkaProducer<String, String> buildKafkaProducer() {
         StringBuilder sb = new StringBuilder();
         sb.append(producerConfigEntity.getHost())
                 .append(":")
@@ -30,7 +29,7 @@ public class KafkaProducerModule extends AbstractModule {
         Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, sb.toString());
         properties.put(ProducerConfig.CLIENT_ID_CONFIG, producerConfigEntity.getId());
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
 
         return new KafkaProducer<>(properties);

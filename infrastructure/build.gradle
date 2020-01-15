@@ -19,4 +19,8 @@ dependencies {
     // Jackson - Json parser
     compile 'com.fasterxml.jackson.core:jackson-databind:2.5.3'
 
+    // Logz.io Guice
+    compile 'io.logz:guice-jersey:1.0.9'
+
+
 }

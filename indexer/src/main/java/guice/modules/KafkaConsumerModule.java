@@ -21,6 +21,11 @@ public class KafkaConsumerModule extends AbstractModule {
         this.kafkaConsumerConfigData = JsonParser.fromJsonFile(CONSUMER_CONFIG_FILE_NAME, KafkaConsumerConfigData.class);
     }
 
+    @Override
+    public void configure() {
+        bind(entities.KafkaConsumer.class);
+    }
+
     @Provides
     public Consumer<String, String> buildConsumer(){
         Properties props = new Properties();

@@ -12,6 +12,7 @@ public class IndexerModule extends AbstractModule {
         install(new ElasticModule());
 
         bind(MessageIndexer.class).to(EsIndexer.class);
+
     }
 
 }
